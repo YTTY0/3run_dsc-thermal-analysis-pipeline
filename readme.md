@@ -1,4 +1,4 @@
-# TA Instruments DSC 2500 Specific Heat Capacity ($C_p$) Calibration & Analysis
+# TA Instruments DSC 2500 Specific Heat Capacity ($C_p$) Calibration & Analysis away (before and after) a first-order transition
 
 An automated Python pipeline built with **NumPy**, **Pandas**, **SciPy**, and **Matplotlib** for **TA Instruments DSC 2500 TRIOS `.txt` exports**. Designed to replace manual spreadsheet and Origin plotting workflows, this tool batch-processes raw thermal scans, selects optimal heating–cooling cycles, calibrates specific heat capacity ($C_p$) against synthetic sapphire ($\alpha\text{-Al}_2\mathrm{O}_3$), fits linear pre- and post-transition baselines, and exports publication-ready vector figures.
 
@@ -27,7 +27,7 @@ Multi-cycle DSC experiments frequently exhibit first-cycle thermal history or pa
 
 $$\dot{Q}_{\text{asym}}(T) = \dot{Q}_{\text{heat}}(T) + \dot{Q}_{\text{cool}}(T)\,\frac{\beta_{\text{heat}}}{\beta_{\text{cool}}}$$
 
-3. Phase-transition peaks are masked where $`\vert{}\mathrm{d}\dot{Q}_{\text{asym}}/\mathrm{d}T\vert{} >`$ `DERIV_THRESHOLD`.
+3. First order phase-transition peaks are masked where $`\vert{}\mathrm{d}\dot{Q}_{\text{asym}}/\mathrm{d}T\vert{} >`$ `DERIV_THRESHOLD`.
 4. The cycle minimizing the mean absolute baseline residual $`\langle \vert{}\dot{Q}_{\text{asym}}(T)\vert{} \rangle`$ is selected automatically.
 
 ### 3. Blank Subtraction & Sapphire Calibration Factor $E(T)$
@@ -54,7 +54,7 @@ The pipeline embeds a 97-point reference table of synthetic sapphire ($\alpha\te
 * **Material:** National Bureau of Standards (NBS) synthetic sapphire ($\alpha\text{-Al}_2\mathrm{O}_3$), $99.98\text{–}99.99\text{ wt\%}$ purity, molecular weight $101.9613\text{ g\,mol}^{-1}$, at $1\text{ atm}$.
 * **Citation:** D. A. Ditmars, S. Ishihara, S. S. Chang, G. Bernstein, and E. D. West, *"Enthalpy and Heat-Capacity Standard Reference Material: Synthetic Sapphire ($\alpha\text{-Al}_2\mathrm{O}_3$) from 10 to 2250 K,"* *Journal of Research of the National Bureau of Standards*, **87**(2), 159–163 (1982).
 
-### 5. Pre- and Post-Transition Linear Baseline Fitting (`cp_analysis.py`)
+### 5. Pre- and Post-Transition Linear Heat capacity function Fitting (`cp_analysis.py`)
 Ordinary least-squares linear regression (`numpy.polyfit`) is performed over user-defined temperature windows before and after the phase transition (`Cp_ranges_HEATING` and `Cp_ranges_COOLING`):
 
 $$C_p(T) = a\,T + b$$
@@ -66,7 +66,7 @@ The slope $a$ ($\mathrm{J\,g^{-1}\,K^{-2}}$), intercept $b$ ($\mathrm{J\,g^{-1}\
 ## Repository Structure
 
 ```text
-ta-dsc2500-cp/
+3run_dsc-thermal-analysis-pipeline/
 ├── config.py            # Default directories, sample filters, and Cp linear fit temperature ranges
 ├── TAdsc_io.py          # TRIOS .txt parser, unit detector, cycle selector, and sapphire calibration
 ├── cp_analysis.py       # CLI entry point: runs calibration, baseline regression, exports, and plots
@@ -89,8 +89,8 @@ pip install -r requirements.txt
 
 ## Usage
 
-1. Place your TRIOS `.txt` exports (sapphire standard, sample runs, and optional empty-pan run) in `./Exampledata` (or configure `DATA_DIR` in `config.py`).
-2. Adjust sample filters and baseline temperature intervals (`Cp_ranges_HEATING`, `Cp_ranges_COOLING`) in `config.py`.
+1. Place your TRIOS exports of `.txt` files (sapphire standard, sample runs, and optional empty-pan run) in `./Exampledata` (or configure `DATA_DIR` in `config.py`).
+2. Adjust temperature range filters and baseline  intervals (`Cp_ranges_HEATING`, `Cp_ranges_COOLING`) in `config.py`.
 3. Run the pipeline from the terminal:
 
 ```bash
@@ -108,9 +108,9 @@ python cp_analysis.py --data ./Exampledata --out ./Exampledata/output --show
 All outputs are written to `OUTPUT_DIR` (`./Exampledata/output` by default):
 
 * **`calibrated_cp/<Sample>_heating.csv` & `.txt`** (and `_cooling`): Full calibrated data tables (`Temperature(K)`, `Temperature(C)`, `NetHeatFlow(mW)`, `Raw_dQdT`, `CalibrationFactor_E`, `CalibratedCp`).
-* **`linear_baseline_equations.txt`**: Plain-text report listing the sapphire literature reference, fitted linear equations $C_p(T) = aT + b$, $R^2$ values, and a fixed-width ASCII summary table.
-* **`linear_baseline_summary.csv`**: Machine-readable CSV summary of all fitted baseline parameters.
-* **`plots/Sapphire_Calibration_Factor_E.svg`**: Heating and cooling sapphire calibration factors $E(T)$.
+* **`linear_cp_equations.txt`**: Plain-text report listing the sapphire literature reference, fitted linear equations $C_p(T) = aT + b$, $R^2$ values, and a fixed-width ASCII summary table.
+* **`linear_cp_summary.csv`**: Machine-readable CSV summary of all fitted baseline parameters.
+* **`plots/Sapphire_Calibration_Factor_E.svg`**: Heating and cooling sapphire calibration factors $E(T)$, which should be close to 1.
 * **`plots/<Sample>_CalibratedCp.svg`**: Calibrated heating and cooling $C_p(T)$ curves overlaid with fitted pre- and post-transition baselines.
 
 ---
