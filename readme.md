@@ -1,6 +1,6 @@
-# Specific Heat Capacity ($C_p$) Calibration & Analysis for TA Instruments
+# TA Instruments DSC 2500 Specific Heat Capacity ($C_p$) Calibration & Analysis
 
-An automated Python pipeline built with **NumPy**, **Pandas**, **SciPy**, and **Matplotlib** for **TA Instruments DSC 2500 TRIOS `.txt` exports**. Designed to replace manual spreadsheet and Origin plotting workflows, this tool batch-processes raw thermal scans, selects optimal lowest-shift heating–cooling cycles, calibrates specific heat capacity ($C_p$) against synthetic sapphire ($\alpha\text{-Al}_2\mathrm{O}_3$), fits linear pre- and post-transition baselines, and exports publication-ready vector figures.
+An automated Python pipeline built with **NumPy**, **Pandas**, **SciPy**, and **Matplotlib** for **TA Instruments DSC 2500 TRIOS `.txt` exports**. Designed to replace manual spreadsheet and Origin plotting workflows, this tool batch-processes raw thermal scans, selects optimal heating–cooling cycles, calibrates specific heat capacity ($C_p$) against synthetic sapphire ($\alpha\text{-Al}_2\mathrm{O}_3$), fits linear pre- and post-transition baselines, and exports publication-ready vector figures.
 
 ---
 
@@ -17,28 +17,36 @@ An automated Python pipeline built with **NumPy**, **Pandas**, **SciPy**, and **
 
 ### 1. TRIOS File Parsing & Automatic Unit Detection (`TAdsc_io.py`)
 * **Ramp Segmentation:** Scans TRIOS `.txt` exports for `Ramp` command headers, extracts the scan rate $\beta$ (converted to $\mathrm{K\,s^{-1}}$), and classifies sequential heating ($\mathrm{d}T/\mathrm{d}t > 0$) and cooling ($\mathrm{d}T/\mathrm{d}t < 0$) segments from median start and end temperatures.
-* **Automatic Kelvin / Celsius Handling:** Inspects the TRIOS unit row, column headers, and `Ramp` command strings to distinguish Kelvin (`K`) from Celsius (`°C`). All temperature arrays are standardized internally to Kelvin ($T[\mathrm{K}] = T[^\circ\mathrm{C}] + 273.15$ when exported in Celsius, or preserved directly when already in Kelvin).
+* **Automatic Kelvin / Celsius Handling:** Inspects the TRIOS unit row, column headers, and `Ramp` command strings to distinguish Kelvin (`K`) from Celsius (`°C`). All temperature arrays are standardized internally to Kelvin ($`T[\mathrm{K}] = T[^\circ\mathrm{C}] + 273.15`$ when exported in Celsius, or preserved directly when already in Kelvin).
 
 ### 2. Optimal Heating–Cooling Cycle Selection
 Multi-cycle DSC experiments frequently exhibit first-cycle thermal history or pan-settling drift. Sequential heating and cooling segments are paired into complete cycles and scored across `[TMIN, TMAX]`:
-1. Heating and cooling heat-flow curves ($\dot{Q}_{\text{heat}}$ and $\dot{Q}_{\text{cool}}$, in $\mathrm{mW}$) are interpolated (`np.interp`) onto a common overlapping temperature grid.
-2. Cooling heat flow is scaled by the scan-rate ratio $\beta_{\text{heat}} / \beta_{\text{cool}}$ so sensible heat contributions cancel even when heating and cooling rates differ:
-   $$\dot{Q}_{\text{asym}}(T) = \dot{Q}_{\text{heat}}(T) + \dot{Q}_{\text{cool}}(T)\,\frac{\beta_{\text{heat}}}{\beta_{\text{cool}}}$$
-3. Phase-transition peaks are masked where $\vert{}\mathrm{d}\dot{Q}_{\text{asym}}/\mathrm{d}T\vert{} > \text{DERIV\_THRESHOLD}$.
-4. The cycle minimizing the mean absolute baseline residual $\overline{\vert{}\dot{Q}_{\text{asym}}(T)\vert{}}$ is selected automatically.
+
+1. Heating and cooling heat-flow curves ($`\dot{Q}_{\text{heat}}`$ and $`\dot{Q}_{\text{cool}}`$, in $\mathrm{mW}$) are interpolated (`np.interp`) onto a common overlapping temperature grid.
+2. Cooling heat flow is scaled by the scan-rate ratio $`\beta_{\text{heat}} / \beta_{\text{cool}}`$ so sensible heat contributions cancel even when heating and cooling rates differ:
+
+$$\dot{Q}_{\text{asym}}(T) = \dot{Q}_{\text{heat}}(T) + \dot{Q}_{\text{cool}}(T)\,\frac{\beta_{\text{heat}}}{\beta_{\text{cool}}}$$
+
+3. Phase-transition peaks are masked where $`\vert{}\mathrm{d}\dot{Q}_{\text{asym}}/\mathrm{d}T\vert{} >`$ `DERIV_THRESHOLD`.
+4. The cycle minimizing the mean absolute baseline residual $`\langle \vert{}\dot{Q}_{\text{asym}}(T)\vert{} \rangle`$ is selected automatically.
 
 ### 3. Blank Subtraction & Sapphire Calibration Factor $E(T)$
 Specific heat capacity calibration follows the standard ratio method (ASTM E1269) independently for heating and cooling scans:
 
-1. **Optional Empty-Pan Subtraction:** If a blank/empty-pan run is present in `DATA_DIR`, its interpolated heat flow $\dot{Q}_{\text{blank}}(T)$ is subtracted from both the sapphire standard and sample curves (otherwise $\dot{Q}_{\text{blank}}(T) = 0$):
-   $$\dot{Q}_{\text{net}}(T) = \dot{Q}_{\text{raw}}(T) - \dot{Q}_{\text{blank}}(T)$$
+1. **Optional Empty-Pan Subtraction:** If a blank/empty-pan run is present in `DATA_DIR`, its interpolated heat flow $`\dot{Q}_{\text{blank}}(T)`$ is subtracted from both the sapphire standard and sample curves (otherwise $`\dot{Q}_{\text{blank}}(T) = 0`$):
+
+$$\dot{Q}_{\text{net}}(T) = \dot{Q}_{\text{raw}}(T) - \dot{Q}_{\text{blank}}(T)$$
 
 2. **Temperature-Dependent Calibration Factor $E(T)$:**
-   $$E(T) = \frac{C_{p,\text{sapphire, ref}}(T)}{\dot{Q}_{\text{sapphire, net}}(T) / (m_{\text{sapphire}} \cdot \beta_{\text{sapphire}})}$$
+
+$$E(T) = \frac{C_{p,\text{sapphire, ref}}(T)}{\dot{Q}_{\text{sapphire, net}}(T) / (m_{\text{sapphire}} \cdot \beta_{\text{sapphire}})}$$
+
    For cooling scans, the sign of $E_{\text{cooling}}(T)$ is inverted (`FLIP_COOLING_CALIB_SIGN = True`) so $E(T) > 0$ in both scan directions.
 
 3. **Sample $C_p(T)$ Calibration:**
-   $$C_{p,\text{sample}}(T) = E(T) \cdot \frac{\dot{Q}_{\text{sample, net}}(T)}{m_{\text{sample}} \cdot \beta_{\text{sample}}}$$
+
+$$C_{p,\text{sample}}(T) = E(T) \cdot \frac{\dot{Q}_{\text{sample, net}}(T)}{m_{\text{sample}} \cdot \beta_{\text{sample}}}$$
+
    Cooling $C_p(T)$ values are sign-corrected during calibration so both heating and cooling exports are reported on a unified positive $C_p$ scale. Temperatures outside the sapphire calibration window are set to `NaN` rather than extrapolated.
 
 ### 4. Built-In Synthetic Sapphire Reference Standard
@@ -48,7 +56,9 @@ The pipeline embeds a 97-point reference table of synthetic sapphire ($\alpha\te
 
 ### 5. Pre- and Post-Transition Linear Baseline Fitting (`cp_analysis.py`)
 Ordinary least-squares linear regression (`numpy.polyfit`) is performed over user-defined temperature windows before and after the phase transition (`Cp_ranges_HEATING` and `Cp_ranges_COOLING`):
+
 $$C_p(T) = a\,T + b$$
+
 The slope $a$ ($\mathrm{J\,g^{-1}\,K^{-2}}$), intercept $b$ ($\mathrm{J\,g^{-1}\,K^{-1}}$), and coefficient of determination ($R^2$) are exported for each branch.
 
 ---
