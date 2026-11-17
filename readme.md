@@ -52,7 +52,7 @@ $$c_{p,\text{sample}}(T) = E(T) \cdot \frac{\dot{Q}_{\text{sample, net}}(T)}{m_{
 ### 4. Built-In Synthetic Sapphire Reference Standard
 The pipeline embeds a 97-point reference table of synthetic sapphire ($\alpha\text{-Al}_2\mathrm{O}_3$, corundum) specific heat capacity spanning **$90\text{–}1650\text{ K}$**, interpolated via natural cubic splines (`scipy.interpolate.CubicSpline`, `extrapolate=False`):
 * **Material:** National Bureau of Standards (NBS) synthetic sapphire ($\alpha\text{-Al}_2\mathrm{O}_3$), $99.98\text{–}99.99\text{ wt\%}$ purity, molecular weight $101.9613\text{ g\,mol}^{-1}$, at $1\text{ atm}$.
-* **Citation:** D. A. Ditmars, S. Ishihara, S. S. Chang, G. Bernstein, and E. D. West, *"Enthalpy and Heat-Capacity Standard Reference Material: Synthetic Sapphire ($\alpha\text{-Al}_2\mathrm{O}_3$) from 10 to 2250 K,"* *Journal of Research of the National Bureau of Standards*, **87**(2), 159–163 (1982).
+* **Citation:** D. A. Ditmars, S. Ishihara, S. S. Chang, G. Bernstein, and E. D. West, "Enthalpy and Heat-Capacity Standard Reference Material: Synthetic Sapphire (α-Al₂O₃) from 10 to 2250 K," *J. Res. Natl. Bur. Stand.*, **87**(2), 159–163 (1982).
 
 ### 5. Pre- and Post-Transition Linear Heat capacity function Fitting (`cp_analysis.py`)
 Ordinary least-squares linear regression (`numpy.polyfit`) is performed over user-defined temperature windows before and after the phase transition (`Cp_ranges_HEATING` and `Cp_ranges_COOLING`):
@@ -117,5 +117,5 @@ All outputs are written to `OUTPUT_DIR` (`./Exampledata/output` by default):
 
 ## References
 
-1. D. A. Ditmars, S. Ishihara, S. S. Chang, G. Bernstein, and E. D. West, *"Enthalpy and Heat-Capacity Standard Reference Material: Synthetic Sapphire ($\alpha\text{-Al}_2\mathrm{O}_3$) from 10 to 2250 K,"* *J. Res. Natl. Bur. Stand.*, **87**(2), 159–163 (1982).
-2. ASTM E1269, *"Standard Test Method for Determining Specific Heat Capacity by Differential Scanning Calorimetry,"* ASTM International.
+1. D. A. Ditmars, S. Ishihara, S. S. Chang, G. Bernstein, and E. D. West, "Enthalpy and Heat-Capacity Standard Reference Material: Synthetic Sapphire (α-Al₂O₃) from 10 to 2250 K," *J. Res. Natl. Bur. Stand.*, **87**(2), 159–163 (1982).
+2. ASTM E1269, "Standard Test Method for Determining Specific Heat Capacity by Differential Scanning Calorimetry," ASTM International.
