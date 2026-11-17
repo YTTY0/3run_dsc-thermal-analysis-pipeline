@@ -1,6 +1,6 @@
-# TA Instruments DSC 2500 Specific Heat Capacity ($C_p$) Calibration & Analysis away (before and after) a first-order transition
+# TA Instruments DSC 2500 Specific Heat Capacity ($c_p$) Calibration & Analysis away (before and after) a first-order transition
 
-An automated Python pipeline built with **NumPy**, **Pandas**, **SciPy**, and **Matplotlib** for **TA Instruments DSC 2500 TRIOS `.txt` exports**. Designed to replace manual spreadsheet and Origin plotting workflows, this tool batch-processes raw thermal scans, selects optimal heating–cooling cycles, calibrates specific heat capacity ($C_p$) against synthetic sapphire ($\alpha\text{-Al}_2\mathrm{O}_3$), fits linear pre- and post-transition baselines, and exports publication-ready vector figures.
+An automated Python pipeline built with **NumPy**, **Pandas**, **SciPy**, and **Matplotlib** for **TA Instruments DSC 2500 TRIOS `.txt` exports**. Designed to replace manual spreadsheet and Origin plotting workflows, this tool batch-processes raw thermal scans, selects optimal heating–cooling cycles, calibrates specific heat capacity ($c_p$) against synthetic sapphire ($\alpha\text{-Al}_2\mathrm{O}_3$), fits linear pre- and post-transition baselines, and exports publication-ready vector figures.
 
 ---
 
@@ -9,7 +9,7 @@ An automated Python pipeline built with **NumPy**, **Pandas**, **SciPy**, and **
 * **End-to-End Batch Processing (`pandas` & `numpy`):** Scans entire experimental directories, parses specimen names and masses from TRIOS headers (converting `g` to `mg` when needed), normalizes mixed Kelvin/Celsius exports, and processes multiple samples in a single run.
 * **Objective Cycle Selection (`numpy`):** Evaluates scan-rate-normalized heating–cooling baseline symmetry with numerical derivative masking (`np.gradient`) to automatically isolate and select the cleanest thermal cycle per specimen.
 * **Spline-Based Sapphire Calibration (`scipy`):** Uses a 97-point natural cubic spline (`scipy.interpolate.CubicSpline`, $90\text{–}1650\text{ K}$) of NIST/NBS synthetic sapphire reference data and vectorized linear interpolation (`np.interp`) with strict out-of-bounds `NaN` guarding.
-* **Automated Baseline Regression & Vector Figures (`matplotlib`):** Fits ordinary least-squares baselines ($C_p(T) = aT + b$) before and after phase transitions and exports standardized `.csv`/`.txt` datasets, fixed-width ASCII summary tables, and `.svg` plots without blocking batch execution.
+* **Automated Baseline Regression & Vector Figures (`matplotlib`):** Fits ordinary least-squares baselines ($c_p(T) = aT + b$) before and after phase transitions and exports standardized `.csv`/`.txt` datasets, fixed-width ASCII summary tables, and `.svg` plots without blocking batch execution.
 
 ---
 
@@ -43,11 +43,11 @@ $$E(T) = \frac{C_{p,\text{sapphire, ref}}(T)}{\dot{Q}_{\text{sapphire, net}}(T) 
 
    For cooling scans, the sign of $E_{\text{cooling}}(T)$ is inverted (`FLIP_COOLING_CALIB_SIGN = True`) so $E(T) > 0$ in both scan directions.
 
-3. **Sample $C_p(T)$ Calibration:**
+3. **Sample $c_p(T)$ Calibration:**
 
-$$C_{p,\text{sample}}(T) = E(T) \cdot \frac{\dot{Q}_{\text{sample, net}}(T)}{m_{\text{sample}} \cdot \beta_{\text{sample}}}$$
+$$c_{p,\text{sample}}(T) = E(T) \cdot \frac{\dot{Q}_{\text{sample, net}}(T)}{m_{\text{sample}} \cdot \beta_{\text{sample}}}$$
 
-   Cooling $C_p(T)$ values are sign-corrected during calibration so both heating and cooling exports are reported on a unified positive $C_p$ scale. Temperatures outside the sapphire calibration window are set to `NaN` rather than extrapolated.
+   Cooling $c_p(T)$ values are sign-corrected during calibration so both heating and cooling exports are reported on a unified positive $c_p$ scale. Temperatures outside the sapphire calibration window are set to `NaN` rather than extrapolated.
 
 ### 4. Built-In Synthetic Sapphire Reference Standard
 The pipeline embeds a 97-point reference table of synthetic sapphire ($\alpha\text{-Al}_2\mathrm{O}_3$, corundum) specific heat capacity spanning **$90\text{–}1650\text{ K}$**, interpolated via natural cubic splines (`scipy.interpolate.CubicSpline`, `extrapolate=False`):
@@ -57,7 +57,7 @@ The pipeline embeds a 97-point reference table of synthetic sapphire ($\alpha\te
 ### 5. Pre- and Post-Transition Linear Heat capacity function Fitting (`cp_analysis.py`)
 Ordinary least-squares linear regression (`numpy.polyfit`) is performed over user-defined temperature windows before and after the phase transition (`Cp_ranges_HEATING` and `Cp_ranges_COOLING`):
 
-$$C_p(T) = a\,T + b$$
+$$c_p(T) = a\,T + b$$
 
 The slope $a$ ($\mathrm{J\,g^{-1}\,K^{-2}}$), intercept $b$ ($\mathrm{J\,g^{-1}\,K^{-1}}$), and coefficient of determination ($R^2$) are exported for each branch.
 
